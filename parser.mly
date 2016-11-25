@@ -1,75 +1,71 @@
+
+(* TOKENS *)
+
+(* Identifiers *)
+
+%token <string> IDENT
+
+(* Primitives *)
+
 %token <int> INT
 %token <string> FLOAT
 %token <string> STRING
-%token <string> IDENT
-%token OPEN_ROUND
-%token CLOSE_ROUND
-%token LINE_COMMENT
+
+(* Delimiters *)
 %token EOL
 %token EOF
 %token SPACE
 
-%start <Hzlt.hzlt list> hzlt
+(* Matched delimiters *)
+(* %token OPEN_ROUND *)
+(* %token CLOSE_ROUND *)
+(* %token OPEN_SQUARE *)
+(* %token CLOSE_SQUARE *)
+
+(* Keywords *)
+(* %token IF *)
+(* %token DEFINE *)
+(* %token ELSE *)
+
+(* START *)
+
+%start <Polart.polart list> polart
 
 %%
 
-hzlt:
-  | a = expr b = hzlt
-    { a :: b } 
-  | end_of_line a = hzlt
-    { a }
-  | space end_of_line a = hzlt
-    { a }
-  | EOF
-    { [] }
+(* NON TERMINALS *)
 
-space:
-  | SPACE space
-    { () }
-  | SPACE
-    { () }
+polart:
+  | a = items end_of_file { a }
 
-end_of_line:
-  | end_of_line space
-    { () }
-  | EOL
-    { () }
+end_of_file:
+  | lines EOF { () }
 
-multiline_space:
-  | multiline_space multiline_space
-    { () }
-  | SPACE
-    { () }
-  | EOL
-    { () }
+lines:
+  | lines EOL { () }
+  | EOL { () }
+
+items:
+  | bc = items EOL a = expr { a :: bc }
+  | a = expr { [a] }
 
 expr:
-  | a = expr space b = expr
-    { Hzlt.Apply (Hzlt.null_location, a, b) }
-  | a = atom
-    { a }
-  | OPEN_ROUND e = multiline_expr CLOSE_ROUND
-    { e }
+  | a = atom { a }
+  | a = fapp { a }
 
-multiline_expr:
-  | a = multiline_expr multiline_space b = multiline_expr
-    { Hzlt.Apply (Hzlt.null_location, a, b) }
-  | a = atom
-    { a }
+fapp:
+  | a = atom_with_fapp SPACE b = atom { Polart.Apply (Polart.null_location, a, b) }
 
-  | multiline_space a = multiline_expr
-    { a }
-  | a = multiline_expr multiline_space
-    { a }
-  | OPEN_ROUND e = multiline_expr CLOSE_ROUND
-    { e }
+atom_with_fapp:
+  | a = atom { a }
+  | a = fapp { a }
 
 atom:
   | i = INT
-    { Hzlt.Int (Hzlt.null_location, i) }
+    { Polart.Int (Polart.null_location, i) }
   | s = STRING
-    { Hzlt.String (Hzlt.null_location, s) }
+    { Polart.String (Polart.null_location, s) }
   | ident = IDENT
-    { Hzlt.Variable (Hzlt.null_location, ident) }
+    { Polart.Variable (Polart.null_location, ident) }
   | f = FLOAT
-    { Hzlt.Float (Hzlt.null_location, f) }
+    { Polart.Float (Polart.null_location, f) }

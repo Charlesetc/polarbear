@@ -4,20 +4,23 @@ let square x = x * x
 
 print (square x)
 
-define examine x {
-  for x = 
-  if x = 2 {
+define examine x [
+  if x = 2 [
     print "x is 2"
-  } else { 
+  ] else [
     print "x is definitely not 2"
-  }
-}
+  ]
+]
 
 # Structure initialization
 < f = 2 ; f = < a = 3 + 4 > ; f = 3 >
 
 # Dictionary initialization
 { this: 2 ; that: "hi" } 
+
+field access:
+
+this.that
 
 # Features
 # 

@@ -1,7 +1,7 @@
 
-# Hazelnut
+# Polarbear
 
-This is Hazelnut. It's a project I'm working on.
+This is polarbear. It's a project I'm working on.
 
 The goals right now are to make a simple but usable language. I plan to have a [structural type system](en.wikipedia.org/wiki/Structural_type_system), that is fully type-inferred.
 
