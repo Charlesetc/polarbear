@@ -36,10 +36,10 @@ rule token = parse
   { STRING (token_string lexbuf) }
 
 (* Matched delimiters *)
-(* | '(' *)
-(*   { OPEN_ROUND } *)
-(* | ')' *)
-(*   { CLOSE_ROUND } *)
+| '('
+  { OPEN_ROUND }
+| ')'
+  { CLOSE_ROUND }
 (* | '[' *)
 (*   { OPEN_SQUARE } *)
 (* | ']' *)

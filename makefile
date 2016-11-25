@@ -1,4 +1,4 @@
-.PHONY: all clean test
+.PHONY: build clean test
 
 MENHIRFLAGS     := --infer -v
 
@@ -6,13 +6,14 @@ OCAMLBUILD      := ocamlbuild -use-ocamlfind -use-menhir -menhir "menhir $(MENHI
 
 MAIN            := polarbear_main
 
-all: build
+test: build
+	@./tools.bash run_all
 
 build:
-	$(OCAMLBUILD) $(MAIN).native
+	@$(OCAMLBUILD) $(MAIN).native
 
 build-debug:
-	$(OCAMLBUILD) $(MAIN).d.byte
+	@$(OCAMLBUILD) $(MAIN).d.byte
 
 debug: build-debug
 	@rlwrap ocamldebug $(MAIN).d.byte
