@@ -74,6 +74,11 @@ expr:
 multiline_expr:
   | a = atom { a }
   | a = multiline_fapp { a }
+  | a = multiline_expr PLUS b = multiline_expr { Polart.Operator (Polart.null_location, Polart.PLUS, a, b) }
+  | a = multiline_expr TIMES b = multiline_expr { Polart.Operator (Polart.null_location, Polart.TIMES, a, b) }
+  | a = multiline_expr DIVIDE b = multiline_expr { Polart.Operator (Polart.null_location, Polart.DIVIDE, a, b) }
+  | a = multiline_expr MINUS b = multiline_expr { Polart.Operator (Polart.null_location, Polart.MINUS, a, b) }
+  | MINUS e = expr %prec UMINUS { Polart.UOperator (Polart.null_location, Polart.MINUS, e) }
 
 (* optional_spaces: *)
 (*   { () } *)

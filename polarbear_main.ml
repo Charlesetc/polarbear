@@ -5,6 +5,7 @@ let compile_polarbear (source : string) =
   let lexed_source = Lexing.from_string source in
   try
     let polarts = Parser.polart Lexer.token lexed_source in
+    let polarts = List.rev polarts in
     (* Polart.string_of_polart polarts *)
     List.map Polart.string_of_polart polarts |> String.concat "\n"
   with Parser.Error ->

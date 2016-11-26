@@ -35,7 +35,7 @@ function run_test () {
 }
 
 function run_all() {
-  $0 list_tests | while read testname; do $0 run_test $testname; done
+  $0 list_tests | while read testname; do $0 run_test $testname; done | column -t
 }
 
 function help () {
