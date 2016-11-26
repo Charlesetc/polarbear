@@ -107,6 +107,8 @@ atom_with_fapp:
 atom:
   | OPEN_ROUND multiline_spaces a = multiline_expr CLOSE_ROUND
     { a }
+  | OPEN_ROUND multiline_spaces CLOSE_ROUND
+    { Polart.Unit Polart.null_location }
   | i = INT
     { Polart.Int (Polart.null_location, i) }
   | s = STRING

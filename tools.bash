@@ -28,7 +28,10 @@ function run_test () {
   then
     echo -e "$file \033[1;32my\033[0m"
   else
-    cat "$temp"
+    echo >&2
+    echo -e "$file " >&2
+    cat "$temp" >&2
+    echo >&2
     echo -e "$file \033[0;31mn\033[0m"
   fi
   rm $temp
