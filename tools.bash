@@ -30,7 +30,7 @@ function run_test () {
   else
     echo >&2
     echo -e "$file " >&2
-    cat "$temp" >&2
+    diff "$temp" "./test/parse/output/$file" >&2
     echo >&2
     echo -e "$file \033[0;31mn\033[0m"
   fi

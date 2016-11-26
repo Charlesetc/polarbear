@@ -22,12 +22,14 @@
 %token TIMES
 %token DIVIDE
 
+%token COLON
+
 
 (* Matched delimiters *)
 %token OPEN_ROUND
 %token CLOSE_ROUND
-(* %token OPEN_SQUARE *)
-(* %token CLOSE_SQUARE *)
+%token OPEN_SQUARE
+%token CLOSE_SQUARE
 
 (* Keywords *)
 (* %token IF *)
@@ -80,14 +82,7 @@ multiline_expr:
   | a = multiline_expr MINUS b = multiline_expr { Polart.Operator (Polart.null_location, Polart.MINUS, a, b) }
   | MINUS e = expr %prec UMINUS { Polart.UOperator (Polart.null_location, Polart.MINUS, e) }
 
-(* optional_spaces: *)
-(*   { () } *)
-(*   | spaces *)
-(*   { () } *)
-
-multiline_spaces:
-  { () }
-  | EOL multiline_spaces
+multiline_spaces: { () } | EOL multiline_spaces
     { () }
 
 fapp:
@@ -104,11 +99,28 @@ atom_with_fapp:
   | a = atom { a }
   | a = fapp { a }
 
+list_of_ident:
+  | a = IDENT b = list_of_ident
+    { a :: b }
+  | a = IDENT
+    { [a] }
+
 atom:
+  (* parentheses *)
   | OPEN_ROUND multiline_spaces a = multiline_expr CLOSE_ROUND
     { a }
+
+  (* unit *)
   | OPEN_ROUND multiline_spaces CLOSE_ROUND
     { Polart.Unit Polart.null_location }
+
+  (* lambdas *)
+  | OPEN_SQUARE multiline_spaces a = items multiline_spaces CLOSE_SQUARE
+    { Polart.Block (Polart.null_location, [], List.rev a) }
+  | COLON multiline_spaces a = list_of_ident multiline_spaces OPEN_SQUARE multiline_spaces b = items multiline_spaces CLOSE_SQUARE
+    { Polart.Block (Polart.null_location, a, List.rev b) }
+
+  (* simple tokens *)
   | i = INT
     { Polart.Int (Polart.null_location, i) }
   | s = STRING

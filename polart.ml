@@ -55,6 +55,8 @@ type polart
     (* body *)
     * polart
   | Block of location
+    (* arguments *)
+    * string list
     (* list of items in block *)
     * polart list
   | Int of location * int
@@ -118,8 +120,12 @@ let rec string_of_polart polart =
       (String.concat " "
         (List.map string_of_identifier arguments))
       (string_of_polart body)
-  | Block (_, polarts) ->
-      "{ " ^ String.concat " ; " (List.map string_of_polart polarts) ^ " }"
+  | Block (_, arguments, polarts) ->
+      ": " ^
+      String.concat " " arguments ^
+      " [ " ^
+      String.concat " ; " (List.map string_of_polart polarts) ^
+      " ]"
   | Int (_, i) ->
       Printf.sprintf "%d" i
   | Float (_, f) ->

@@ -4,7 +4,13 @@ let square x = x * x
 
 print (square x)
 
-define examine x [
+# lambdas
+
+let square = : x [ x * x ]
+
+# functions / same thing
+
+define examine : x [
   if x = 2 [
     print "x is 2"
   ] else [

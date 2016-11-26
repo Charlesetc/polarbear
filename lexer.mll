@@ -17,9 +17,9 @@ rule token = parse
 
 (* Delimiters *)
 | [' ' '\t']
-{ token lexbuf }
+  { token lexbuf }
 | ['\n' ';']
-{ EOL }
+  { EOL }
 | '#' [^ '\n'] *
   { EOL }
 | eof
@@ -34,6 +34,8 @@ rule token = parse
   { TIMES }
 | '/'
   { DIVIDE }
+| ':'
+  { COLON }
 
 (* Primitives *)
 | ['0'-'9']* '.' ['0'-'9']+ as f
@@ -50,10 +52,10 @@ rule token = parse
   { OPEN_ROUND }
 | ')'
   { CLOSE_ROUND }
-(* | '[' *)
-(*   { OPEN_SQUARE } *)
-(* | ']' *)
-(*   { CLOSE_SQUARE } *)
+| '['
+  { OPEN_SQUARE }
+| ']'
+  { CLOSE_SQUARE }
 
 (* Everything else *)
 | ['a'-'z']+ as ident
