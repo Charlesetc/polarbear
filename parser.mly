@@ -14,7 +14,7 @@
 (* Delimiters *)
 %token EOL
 %token EOF
-%token SPACE
+
 
 (* Matched delimiters *)
 %token OPEN_ROUND
@@ -27,6 +27,12 @@
 (* %token DEFINE *)
 (* %token ELSE *)
 
+(* PRECEDENCE *)
+
+(* %left PLUS MINUS *)
+(* %left TIMES DIV *)
+(* %nonassoc UMINUS *)
+
 (* START *)
 
 %start <Polart.polart list> polart
@@ -36,13 +42,13 @@
 (* NON TERMINALS *)
 
 polart:
-  | a = items end_of_file { a }
+  | multiline_spaces a = items end_of_file { a }
 
 end_of_file:
   | lines EOF { () }
 
 lines:
-  | lines EOL { () }
+  | EOL lines { () }
   | EOL { () }
 
 items:
@@ -62,24 +68,13 @@ multiline_expr:
 (*   | spaces *)
 (*   { () } *)
 
-spaces:
-  | spaces SPACE
-    { () }
-  | SPACE
-    { () }
-
 multiline_spaces:
-  | spaces SPACE
-    { () }
-  | spaces EOL
-    { () }
-  | SPACE
-    { () }
-  | EOL
+  { () }
+  | EOL multiline_spaces
     { () }
 
 fapp:
-  | a = atom_with_fapp spaces b = atom { Polart.Apply (Polart.null_location, a, b) }
+  | a = atom_with_fapp b = atom { Polart.Apply (Polart.null_location, a, b) }
 
 multiline_fapp:
   | a = atom_with_multiline_fapp multiline_spaces b = atom { Polart.Apply (Polart.null_location, a, b) }
@@ -93,7 +88,7 @@ atom_with_fapp:
   | a = fapp { a }
 
 atom:
-  | OPEN_ROUND a = multiline_expr CLOSE_ROUND
+  | OPEN_ROUND multiline_spaces a = multiline_expr CLOSE_ROUND
     { a }
   | i = INT
     { Polart.Int (Polart.null_location, i) }

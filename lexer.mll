@@ -17,7 +17,7 @@ rule token = parse
 
 (* Delimiters *)
 | [' ' '\t']
-{ SPACE }
+{ token lexbuf }
 | ['\n' ';']
 { EOL }
 | '#' [^ '\n'] *

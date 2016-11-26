@@ -23,11 +23,12 @@ function remove_test () {
 function run_test () {
   file=$(basename $1 .plr).plr
   temp=$(mktemp '/tmp/XXXX.plrt')
-  ./polarbear_main.native < ./test/parse/input/$file > $temp
-  if cmp ./test/parse/output/$file $temp 
+
+  if ./polarbear_main.native < ./test/parse/input/$file > $temp && cmp ./test/parse/output/$file $temp
   then
     echo -e "$file \033[1;32my\033[0m"
   else
+    cat "$temp"
     echo -e "$file \033[0;31mn\033[0m"
   fi
   rm $temp

@@ -1,14 +1,15 @@
 
 (* polarbear main *)
 
-let compile_hazelnut (source : string) =
+let compile_polarbear (source : string) =
   let lexed_source = Lexing.from_string source in
   try
     let polarts = Parser.polart Lexer.token lexed_source in
     (* Polart.string_of_polart polarts *)
     List.map Polart.string_of_polart polarts |> String.concat "\n"
   with Parser.Error ->
-    Printf.sprintf "%d to %d: syntax error.\n%!" (Lexing.lexeme_start lexed_source) (Lexing.lexeme_end lexed_source)
+    Printf.eprintf "%d to %d: syntax error.\n%!" (Lexing.lexeme_start lexed_source) (Lexing.lexeme_end lexed_source) ;
+    exit 1
 
 let all_input =
   let all = ref [] in
@@ -21,5 +22,5 @@ let all_input =
 
 
 let () =
-  print_endline (compile_hazelnut all_input) 
+  print_endline (compile_polarbear all_input)
 
