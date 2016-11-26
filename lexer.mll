@@ -12,8 +12,10 @@ rule token = parse
 (*   { IF } *)
 (* | "else" *)
 (*   { IF } *)
-(* | "define" *)
-(*   { DEFINE } *)
+| "define"
+  { DEFINE }
+| "let"
+  { LET }
 
 (* Delimiters *)
 | [' ' '\t']
@@ -36,6 +38,8 @@ rule token = parse
   { DIVIDE }
 | ':'
   { COLON }
+| '='
+  { EQUALS }
 
 (* Primitives *)
 | ['0'-'9']* '.' ['0'-'9']+ as f

@@ -48,11 +48,9 @@ type polart
     (* argument *)
     * polart
   | Definition of location
-    (* name of the function *)
-    * identifier
-    (* argument list *)
-    * identifier list
-    (* body *)
+    (* name *)
+    * string
+    (* item *)
     * polart
   | Block of location
     (* arguments *)
@@ -113,13 +111,11 @@ let rec string_of_polart polart =
       "(%s %s)"
       (string_of_polart f)
       (string_of_polart argument)
-  | Definition (_, function_name, arguments, body) ->
+  | Definition (_, name, e) ->
     Printf.sprintf
-      "(define %s %s { %s })"
-      (string_of_identifier function_name)
-      (String.concat " "
-        (List.map string_of_identifier arguments))
-      (string_of_polart body)
+      "(define %s %s)"
+      name
+      (string_of_polart e)
   | Block (_, arguments, polarts) ->
       ": " ^
       String.concat " " arguments ^

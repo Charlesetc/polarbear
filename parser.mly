@@ -21,6 +21,7 @@
 %token MINUS
 %token TIMES
 %token DIVIDE
+%token EQUALS
 
 %token COLON
 
@@ -33,14 +34,16 @@
 
 (* Keywords *)
 (* %token IF *)
-(* %token DEFINE *)
+%token DEFINE
+%token LET
 (* %token ELSE *)
 
 (* PRECEDENCE *)
 
+%nonassoc LET
 %left PLUS MINUS
 %left TIMES DIVIDE
-%nonassoc UMINUS
+%nonassoc UMINUS DEFINE
 
 (* START *)
 
@@ -65,13 +68,22 @@ items:
   | a = expr { [a] }
 
 expr:
+  (* most basic expression *)
   | a = atom { a }
+
+  (* function application *)
   | a = fapp { a }
-  | a = expr PLUS b = expr { Polart.Operator (Polart.null_location, Polart.PLUS, a, b) }
-  | a = expr TIMES b = expr { Polart.Operator (Polart.null_location, Polart.TIMES, a, b) }
-  | a = expr DIVIDE b = expr { Polart.Operator (Polart.null_location, Polart.DIVIDE, a, b) }
-  | a = expr MINUS b = expr { Polart.Operator (Polart.null_location, Polart.MINUS, a, b) }
+
+  (* operators *)
+  | a = expr PLUS multiline_spaces b = expr { Polart.Operator (Polart.null_location, Polart.PLUS, a, b) }
+  | a = expr TIMES multiline_spaces b = expr { Polart.Operator (Polart.null_location, Polart.TIMES, a, b) }
+  | a = expr DIVIDE multiline_spaces b = expr { Polart.Operator (Polart.null_location, Polart.DIVIDE, a, b) }
+  | a = expr MINUS multiline_spaces b = expr { Polart.Operator (Polart.null_location, Polart.MINUS, a, b) }
   | MINUS e = expr %prec UMINUS { Polart.UOperator (Polart.null_location, Polart.MINUS, e) }
+
+  (* definitions *)
+  | DEFINE i = IDENT e = expr %prec DEFINE { Polart.Definition (Polart.null_location, i, e) }
+  | LET i = IDENT EQUALS multiline_spaces e = expr %prec LET { Polart.Definition (Polart.null_location, i, e) }
 
 multiline_expr:
   | a = atom { a }
