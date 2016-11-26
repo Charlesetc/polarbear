@@ -8,10 +8,10 @@
 
 rule token = parse
 (* Keywords *)
-(* | "if" *)
-(*   { IF } *)
-(* | "else" *)
-(*   { IF } *)
+| "if"
+  { IF }
+| "else"
+  { ELSE }
 | "define"
   { DEFINE }
 | "let"
@@ -62,7 +62,7 @@ rule token = parse
   { CLOSE_SQUARE }
 
 (* Everything else *)
-| ['a'-'z']+ as ident
+| ['a'-'z' '_' '\'']+ as ident
   { IDENT ident }
 | _
   { raise (Error (Printf.sprintf "%d: unexpected character %s.\n" (Lexing.lexeme_start lexbuf) (Lexing.lexeme lexbuf))) }

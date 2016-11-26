@@ -26,13 +26,25 @@ function run_test () {
 
   if ./polarbear_main.native < ./test/parse/input/$file > $temp && cmp ./test/parse/output/$file $temp
   then
-    echo -e "$file \033[1;32my\033[0m"
+    temp2=$(mktemp '/tmp/XXXX.plrt')
+
+    # also assert that the generated output can be parsed
+    if ./polarbear_main.native < ./test/parse/output/$file > $temp2 && cmp $temp $temp
+    then
+      echo -e "$file \033[1;32my\033[0m"
+    else
+      echo >&2
+      diff "$temp" "$temp2" >&2
+      echo >&2
+      echo -e "$file \033[0;31mn\033[0m"
+    fi
+    rm $temp2
   else
     echo >&2
     echo -e "$file " >&2
     diff "$temp" "./test/parse/output/$file" >&2
     echo >&2
-    echo -e "$file \033[0;31mn\033[0m"
+    echo -e "$file \033[3;31mn\033[0m"
   fi
   rm $temp
 }

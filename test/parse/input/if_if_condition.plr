@@ -1,0 +1,7 @@
+if true [
+  this
+] else if false [
+  that
+] else [
+  nothing
+]

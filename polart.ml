@@ -30,9 +30,9 @@ type polart
     (* condition *)
     * polart
     (* true branch *)
-    * polart
+    * polart list
     (* optional false branch *)
-    * polart option
+    * polart list option
   | For of location
     (* initialization *)
     * polart
@@ -90,15 +90,15 @@ let rec string_of_polart polart =
         (string_of_polart child)
   | If (_, condition, ifbranch, Some elsebranch) ->
     Printf.sprintf
-      "(if %s { %s } else { %s })"
+      "(if %s [ %s ] else [ %s ])"
       (string_of_polart condition)
-      (string_of_polart ifbranch)
-      (string_of_polart elsebranch)
+      (String.concat " ; " (List.map string_of_polart ifbranch))
+      (String.concat " ; " (List.map string_of_polart elsebranch))
   | If (_, condition, ifbranch, None) ->
     Printf.sprintf
-      "(if %s { %s })"
+      "(if %s [ %s ])"
       (string_of_polart condition)
-      (string_of_polart ifbranch)
+      (String.concat " ; " (List.map string_of_polart ifbranch))
   | For (_, initialization, condition, step, action) ->
     Printf.sprintf
       "(for %s ; %s ; %s { %s })"
@@ -117,11 +117,16 @@ let rec string_of_polart polart =
       name
       (string_of_polart e)
   | Block (_, arguments, polarts) ->
-      ": " ^
-      String.concat " " arguments ^
-      " [ " ^
-      String.concat " ; " (List.map string_of_polart polarts) ^
-      " ]"
+      if (List.length arguments > 0) then
+        ": " ^
+        String.concat " " arguments ^
+        " [ " ^
+        String.concat " ; " (List.map string_of_polart polarts) ^
+        " ]"
+      else
+        "[ " ^
+        String.concat " ; " (List.map string_of_polart polarts) ^
+        " ]"
   | Int (_, i) ->
       Printf.sprintf "%d" i
   | Float (_, f) ->

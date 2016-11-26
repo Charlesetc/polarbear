@@ -24,9 +24,17 @@ define examine : x [
 # Dictionary initialization
 { this: 2 ; that: "hi" } 
 
-field access:
+{ x = 2 ; y = 3 }
+
+# field access:
 
 this.that
+
+# Polymorphic varients:
+
+Some 2
+None
+
 
 # Features
 # 

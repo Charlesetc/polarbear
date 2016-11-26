@@ -33,14 +33,15 @@
 %token CLOSE_SQUARE
 
 (* Keywords *)
-(* %token IF *)
+%token IF
+%token ELSE
 %token DEFINE
 %token LET
-(* %token ELSE *)
 
 (* PRECEDENCE *)
 
 %nonassoc LET
+(* %nonassoc IF *)
 %left PLUS MINUS
 %left TIMES DIVIDE
 %nonassoc UMINUS DEFINE
@@ -85,16 +86,44 @@ expr:
   | DEFINE i = IDENT e = expr %prec DEFINE { Polart.Definition (Polart.null_location, i, e) }
   | LET i = IDENT EQUALS multiline_spaces e = expr %prec LET { Polart.Definition (Polart.null_location, i, e) }
 
+  (* conditionals *)
+  | i = if_condition { i }
+
+if_condition:
+  | IF condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE { Polart.If (Polart.null_location, condition, body, None) }
+  | IF condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE ELSE multiline_spaces OPEN_SQUARE multiline_spaces elsebody = items multiline_spaces CLOSE_SQUARE { Polart.If (Polart.null_location, condition, body, Some elsebody) }
+  | IF condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE ELSE multiline_spaces elsebody = if_condition { Polart.If (Polart.null_location, condition, body, Some [elsebody]) }
+
 multiline_expr:
+  (* most basic expression *)
   | a = atom { a }
+
+  (* function application *)
   | a = multiline_fapp { a }
+
+  (* operators *)
   | a = multiline_expr PLUS b = multiline_expr { Polart.Operator (Polart.null_location, Polart.PLUS, a, b) }
   | a = multiline_expr TIMES b = multiline_expr { Polart.Operator (Polart.null_location, Polart.TIMES, a, b) }
   | a = multiline_expr DIVIDE b = multiline_expr { Polart.Operator (Polart.null_location, Polart.DIVIDE, a, b) }
   | a = multiline_expr MINUS b = multiline_expr { Polart.Operator (Polart.null_location, Polart.MINUS, a, b) }
   | MINUS e = expr %prec UMINUS { Polart.UOperator (Polart.null_location, Polart.MINUS, e) }
 
-multiline_spaces: { () } | EOL multiline_spaces
+  (* definitions *)
+  | DEFINE multiline_spaces i = IDENT multiline_spaces e = expr %prec DEFINE { Polart.Definition (Polart.null_location, i, e) }
+  | LET multiline_spaces i = IDENT multiline_spaces EQUALS multiline_spaces e = expr %prec LET { Polart.Definition (Polart.null_location, i, e) }
+
+  (* conditionals *)
+  | i = multiline_if_condition { i }
+
+multiline_if_condition:
+  | IF multiline_spaces condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE { Polart.If (Polart.null_location, condition, List.rev body, None) }
+  | IF multiline_spaces condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE multiline_spaces ELSE multiline_spaces OPEN_SQUARE multiline_spaces elsebody = items multiline_spaces CLOSE_SQUARE { Polart.If (Polart.null_location, condition, List.rev body, Some (List.rev elsebody)) }
+  | IF multiline_spaces condition = atom multiline_spaces OPEN_SQUARE  multiline_spaces body = items multiline_spaces CLOSE_SQUARE multiline_spaces ELSE multiline_spaces elsebody = multiline_if_condition { Polart.If (Polart.null_location, condition, List.rev body, Some [elsebody]) }
+
+
+multiline_spaces:
+    { () }
+  | EOL multiline_spaces
     { () }
 
 fapp:
