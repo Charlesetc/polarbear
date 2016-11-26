@@ -15,6 +15,13 @@
 %token EOL
 %token EOF
 
+(* Operators *)
+
+%token PLUS
+%token MINUS
+%token TIMES
+%token DIVIDE
+
 
 (* Matched delimiters *)
 %token OPEN_ROUND
@@ -29,9 +36,9 @@
 
 (* PRECEDENCE *)
 
-(* %left PLUS MINUS *)
-(* %left TIMES DIV *)
-(* %nonassoc UMINUS *)
+%left PLUS MINUS
+%left TIMES DIVIDE
+%nonassoc UMINUS
 
 (* START *)
 
@@ -58,6 +65,11 @@ items:
 expr:
   | a = atom { a }
   | a = fapp { a }
+  | a = expr PLUS b = expr { Polart.Operator (Polart.null_location, Polart.PLUS, a, b) }
+  | a = expr TIMES b = expr { Polart.Operator (Polart.null_location, Polart.TIMES, a, b) }
+  | a = expr DIVIDE b = expr { Polart.Operator (Polart.null_location, Polart.DIVIDE, a, b) }
+  | a = expr MINUS b = expr { Polart.Operator (Polart.null_location, Polart.MINUS, a, b) }
+  | MINUS e = expr %prec UMINUS { Polart.UOperator (Polart.null_location, Polart.MINUS, e) }
 
 multiline_expr:
   | a = atom { a }

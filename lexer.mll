@@ -25,6 +25,16 @@ rule token = parse
 | eof
   { EOF }
 
+(* Operators *)
+| '-'
+  { MINUS }
+| '+'
+  { PLUS }
+| '*'
+  { TIMES }
+| '/'
+  { DIVIDE }
+
 (* Primitives *)
 | ['0'-'9']* '.' ['0'-'9']+ as f
   { FLOAT f }

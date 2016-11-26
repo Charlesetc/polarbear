@@ -8,6 +8,18 @@ let null_location = { column = 0 ; row = 0 }
 
 type identifier = location * string
 
+type operator_type =
+  | PLUS
+  | MINUS
+  | TIMES
+  | DIVIDE
+
+let string_of_operator_type = function
+  | PLUS -> "+"
+  | TIMES -> "*"
+  | MINUS -> "-"
+  | DIVIDE -> "/"
+
 type polart
   = Let of location
     (* identifier assigned to *)
@@ -54,6 +66,18 @@ type polart
   | String of location * string
   | Unit of location
   | Variable of location * string
+  | Operator of location
+    (* which operator it is *)
+    * operator_type
+    (* first argument *)
+    * polart
+    (* second argument *)
+    * polart
+  | UOperator of location
+    (* which operator it is *)
+    * operator_type
+    (* argument *)
+    * polart
 
 let string_of_identifier (_, s) = s
 
@@ -106,3 +130,7 @@ let rec string_of_polart polart =
       "()"
   | Variable (_, name) ->
       Printf.sprintf "%s" name
+  | Operator (_, operator_type, a, b) ->
+      "(" ^ string_of_polart a ^ " " ^ (string_of_operator_type operator_type) ^ " " ^ string_of_polart b ^ ")"
+  | UOperator (_, operator_type, e) ->
+      "(" ^ (string_of_operator_type operator_type) ^ " " ^ string_of_polart e ^ ")"
