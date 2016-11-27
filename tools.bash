@@ -61,12 +61,12 @@ function run_all() {
   success_metric=$(mktemp /tmp/XXXX.boolean)
 
   {
-  $0 list_tests | while read testname; do $0 run_test $testname $success_metric; done ;
+  $0 list_tests | xargs -P 0 -IX $0 run_test X $success_metric
   if [ -f $success_metric ] ; then
     echo
     echo -e "all \033[0;32m______\033[0m"
-  else
     rm -f $success_metric
+  else
     echo
     echo -e "all \033[0;31m______\033[0m"
   fi
