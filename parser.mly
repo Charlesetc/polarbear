@@ -58,6 +58,11 @@
 (* NON TERMINALS *)
 
 polart:
+  | end_of_file
+    {
+      prerr_endline "no input" ;
+      exit 1
+    }
   | multiline_spaces a = items end_of_file { a }
 
 end_of_file:
