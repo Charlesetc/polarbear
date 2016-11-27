@@ -27,6 +27,10 @@ rule token = parse
 | eof
   { EOF }
 
+(* Dot syntax *)
+| '.' (['a'-'z' '_' '\'']+ as ident)
+  { FIELD ident }
+
 (* Operators *)
 | '-'
   { MINUS }
@@ -44,7 +48,7 @@ rule token = parse
 (* Primitives *)
 | ['0'-'9']* '.' ['0'-'9']+ as f
   { FLOAT f }
-| ['0'-'9']+ '.' ['0'-'9']* as f
+| ['0'-'9']+ '.' ['0'-'9']+ as f
   { FLOAT f }
 | ['0'-'9']+ as i
   { INT (int_of_string i) }

@@ -78,6 +78,11 @@ type polart
     * operator_type
     (* argument *)
     * polart
+  | Field of location
+    (* receiver *)
+    * polart
+    (* name *)
+    * string
 
 let string_of_identifier (_, s) = s
 
@@ -141,3 +146,5 @@ let rec string_of_polart polart =
       "(" ^ string_of_polart a ^ " " ^ (string_of_operator_type operator_type) ^ " " ^ string_of_polart b ^ ")"
   | UOperator (_, operator_type, e) ->
       "(" ^ (string_of_operator_type operator_type) ^ " " ^ string_of_polart e ^ ")"
+  | Field (_, receiver, name) ->
+      "(" ^ string_of_polart receiver ^ "." ^ name ^ ")"

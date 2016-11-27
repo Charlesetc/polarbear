@@ -33,6 +33,10 @@ function run_test () {
     then
       echo -e "$file \033[1;32my\033[0m"
     else
+
+      # set as failed
+      rm -f $2
+
       echo >&2
       diff "$temp" "$temp2" >&2
       echo >&2
@@ -40,6 +44,10 @@ function run_test () {
     fi
     rm $temp2
   else
+
+    # set as failed
+    rm -f $2
+
     echo >&2
     echo -e "$file " >&2
     diff "$temp" "./test/parse/output/$file" >&2
@@ -50,7 +58,19 @@ function run_test () {
 }
 
 function run_all() {
-  $0 list_tests | while read testname; do $0 run_test $testname; done | column -t
+  success_metric=$(mktemp /tmp/XXXX.boolean)
+
+  {
+  $0 list_tests | while read testname; do $0 run_test $testname $success_metric; done ;
+  if [ -f $success_metric ] ; then
+    echo
+    echo -e "all \033[0;32m______\033[0m"
+  else
+    rm -f $success_metric
+    echo
+    echo -e "all \033[0;31m______\033[0m"
+  fi
+} | column -t
 }
 
 function help () {

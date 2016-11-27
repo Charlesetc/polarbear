@@ -24,6 +24,7 @@
 %token EQUALS
 
 %token COLON
+%token <string> FIELD
 
 
 (* Matched delimiters *)
@@ -89,6 +90,7 @@ expr:
   (* conditionals *)
   | i = if_condition { i }
 
+
 if_condition:
   | IF condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE { Polart.If (Polart.null_location, condition, body, None) }
   | IF condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE ELSE multiline_spaces OPEN_SQUARE multiline_spaces elsebody = items multiline_spaces CLOSE_SQUARE { Polart.If (Polart.null_location, condition, body, Some elsebody) }
@@ -114,6 +116,7 @@ multiline_expr:
 
   (* conditionals *)
   | i = multiline_if_condition { i }
+
 
 multiline_if_condition:
   | IF multiline_spaces condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE { Polart.If (Polart.null_location, condition, List.rev body, None) }
@@ -150,6 +153,9 @@ atom:
   (* parentheses *)
   | OPEN_ROUND multiline_spaces a = multiline_expr CLOSE_ROUND
     { a }
+
+  (* dot syntax *)
+  | receiver = atom name = FIELD { Polart.Field (Polart.null_location, receiver, name) }
 
   (* unit *)
   | OPEN_ROUND multiline_spaces CLOSE_ROUND
