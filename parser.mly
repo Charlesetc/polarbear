@@ -32,6 +32,8 @@
 %token CLOSE_ROUND
 %token OPEN_SQUARE
 %token CLOSE_SQUARE
+%token OPEN_ANGLE
+%token CLOSE_ANGLE
 
 (* Keywords *)
 %token IF
@@ -149,10 +151,21 @@ list_of_ident:
   | a = IDENT
     { [a] }
 
+object_fields:
+  | f = object_field EOL fs = object_fields { f :: fs }
+  | f = object_field { [f] }
+
+object_field:
+  | a = IDENT multiline_spaces EQUALS multiline_spaces b = expr { (a, b) }
+
 atom:
   (* parentheses *)
   | OPEN_ROUND multiline_spaces a = multiline_expr CLOSE_ROUND
     { a }
+
+  (* object literals *)
+  | OPEN_ANGLE multiline_spaces a = object_fields CLOSE_ANGLE
+    { Polart.Object (Polart.null_location, a) }
 
   (* dot syntax *)
   | receiver = atom name = FIELD { Polart.Field (Polart.null_location, receiver, name) }

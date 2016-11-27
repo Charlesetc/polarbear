@@ -64,6 +64,10 @@ rule token = parse
   { OPEN_SQUARE }
 | ']'
   { CLOSE_SQUARE }
+| '<'
+  { OPEN_ANGLE }
+| '>'
+  { CLOSE_ANGLE }
 
 (* Everything else *)
 | ['a'-'z' '_' '\'']+ as ident

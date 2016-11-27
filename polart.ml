@@ -83,6 +83,9 @@ type polart
     * polart
     (* name *)
     * string
+  | Object of location
+    (* list of fields to values *)
+    * ( string * polart ) list
 
 let string_of_identifier (_, s) = s
 
@@ -148,3 +151,7 @@ let rec string_of_polart polart =
       "(" ^ (string_of_operator_type operator_type) ^ " " ^ string_of_polart e ^ ")"
   | Field (_, receiver, name) ->
       "(" ^ string_of_polart receiver ^ "." ^ name ^ ")"
+  | Object (_, fields) ->
+      "< " ^
+      String.concat " ; " (List.map (fun (name, e) -> name ^ " = " ^ string_of_polart e) fields) ^
+      " >"
