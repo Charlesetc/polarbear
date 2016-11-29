@@ -1,10 +1,5 @@
 
-type location = {
-  column : int ;
-  row : int ;
-}
-
-let null_location = { column = 0 ; row = 0 }
+type location = Lexing.position * Lexing.position
 
 type identifier = location * string
 
