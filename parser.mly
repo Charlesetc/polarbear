@@ -51,13 +51,13 @@
 
 (* START *)
 
-%start <Polart.polart list> polart
+%start <Polarp.polarp list> polarp
 
 %%
 
 (* NON TERMINALS *)
 
-polart:
+polarp:
   | end_of_file
     {
       prerr_endline "no input" ;
@@ -84,24 +84,24 @@ expr:
   | a = fapp { a }
 
   (* operators *)
-  | a = expr PLUS multiline_spaces b = expr { Polart.Operator (($startpos, $endpos), Polart.PLUS, a, b) }
-  | a = expr TIMES multiline_spaces b = expr { Polart.Operator (($startpos, $endpos), Polart.TIMES, a, b) }
-  | a = expr DIVIDE multiline_spaces b = expr { Polart.Operator (($startpos, $endpos), Polart.DIVIDE, a, b) }
-  | a = expr MINUS multiline_spaces b = expr { Polart.Operator (($startpos, $endpos), Polart.MINUS, a, b) }
-  | MINUS e = expr %prec UMINUS { Polart.UOperator (($startpos, $endpos), Polart.MINUS, e) }
+  | a = expr PLUS multiline_spaces b = expr { Polarp.Operator (($startpos, $endpos), Polarp.PLUS, a, b) }
+  | a = expr TIMES multiline_spaces b = expr { Polarp.Operator (($startpos, $endpos), Polarp.TIMES, a, b) }
+  | a = expr DIVIDE multiline_spaces b = expr { Polarp.Operator (($startpos, $endpos), Polarp.DIVIDE, a, b) }
+  | a = expr MINUS multiline_spaces b = expr { Polarp.Operator (($startpos, $endpos), Polarp.MINUS, a, b) }
+  | MINUS e = expr %prec UMINUS { Polarp.UOperator (($startpos, $endpos), Polarp.MINUS, e) }
 
   (* definitions *)
-  | DEFINE i = IDENT e = expr %prec DEFINE { Polart.Definition (($startpos, $endpos), i, e) }
-  | LET i = IDENT EQUALS multiline_spaces e = expr %prec LET { Polart.Definition (($startpos, $endpos), i, e) }
+  | DEFINE i = IDENT e = expr %prec DEFINE { Polarp.Definition (($startpos, $endpos), i, e) }
+  | LET i = IDENT EQUALS multiline_spaces e = expr %prec LET { Polarp.Definition (($startpos, $endpos), i, e) }
 
   (* conditionals *)
   | i = if_condition { i }
 
 
 if_condition:
-  | IF condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE { Polart.If (($startpos, $endpos), condition, body, None) }
-  | IF condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE ELSE multiline_spaces OPEN_SQUARE multiline_spaces elsebody = items multiline_spaces CLOSE_SQUARE { Polart.If (($startpos, $endpos), condition, body, Some elsebody) }
-  | IF condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE ELSE multiline_spaces elsebody = if_condition { Polart.If (($startpos, $endpos), condition, body, Some [elsebody]) }
+  | IF condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE { Polarp.If (($startpos, $endpos), condition, body, None) }
+  | IF condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE ELSE multiline_spaces OPEN_SQUARE multiline_spaces elsebody = items multiline_spaces CLOSE_SQUARE { Polarp.If (($startpos, $endpos), condition, body, Some elsebody) }
+  | IF condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE ELSE multiline_spaces elsebody = if_condition { Polarp.If (($startpos, $endpos), condition, body, Some [elsebody]) }
 
 multiline_expr:
   (* most basic expression *)
@@ -111,24 +111,24 @@ multiline_expr:
   | a = multiline_fapp { a }
 
   (* operators *)
-  | a = multiline_expr PLUS b = multiline_expr { Polart.Operator (($startpos, $endpos), Polart.PLUS, a, b) }
-  | a = multiline_expr TIMES b = multiline_expr { Polart.Operator (($startpos, $endpos), Polart.TIMES, a, b) }
-  | a = multiline_expr DIVIDE b = multiline_expr { Polart.Operator (($startpos, $endpos), Polart.DIVIDE, a, b) }
-  | a = multiline_expr MINUS b = multiline_expr { Polart.Operator (($startpos, $endpos), Polart.MINUS, a, b) }
-  | MINUS e = expr %prec UMINUS { Polart.UOperator (($startpos, $endpos), Polart.MINUS, e) }
+  | a = multiline_expr PLUS b = multiline_expr { Polarp.Operator (($startpos, $endpos), Polarp.PLUS, a, b) }
+  | a = multiline_expr TIMES b = multiline_expr { Polarp.Operator (($startpos, $endpos), Polarp.TIMES, a, b) }
+  | a = multiline_expr DIVIDE b = multiline_expr { Polarp.Operator (($startpos, $endpos), Polarp.DIVIDE, a, b) }
+  | a = multiline_expr MINUS b = multiline_expr { Polarp.Operator (($startpos, $endpos), Polarp.MINUS, a, b) }
+  | MINUS e = expr %prec UMINUS { Polarp.UOperator (($startpos, $endpos), Polarp.MINUS, e) }
 
   (* definitions *)
-  | DEFINE multiline_spaces i = IDENT multiline_spaces e = expr %prec DEFINE { Polart.Definition (($startpos, $endpos), i, e) }
-  | LET multiline_spaces i = IDENT multiline_spaces EQUALS multiline_spaces e = expr %prec LET { Polart.Definition (($startpos, $endpos), i, e) }
+  | DEFINE multiline_spaces i = IDENT multiline_spaces e = expr %prec DEFINE { Polarp.Definition (($startpos, $endpos), i, e) }
+  | LET multiline_spaces i = IDENT multiline_spaces EQUALS multiline_spaces e = expr %prec LET { Polarp.Definition (($startpos, $endpos), i, e) }
 
   (* conditionals *)
   | i = multiline_if_condition { i }
 
 
 multiline_if_condition:
-  | IF multiline_spaces condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE { Polart.If (($startpos, $endpos), condition, List.rev body, None) }
-  | IF multiline_spaces condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE multiline_spaces ELSE multiline_spaces OPEN_SQUARE multiline_spaces elsebody = items multiline_spaces CLOSE_SQUARE { Polart.If (($startpos, $endpos), condition, List.rev body, Some (List.rev elsebody)) }
-  | IF multiline_spaces condition = atom multiline_spaces OPEN_SQUARE  multiline_spaces body = items multiline_spaces CLOSE_SQUARE multiline_spaces ELSE multiline_spaces elsebody = multiline_if_condition { Polart.If (($startpos, $endpos), condition, List.rev body, Some [elsebody]) }
+  | IF multiline_spaces condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE { Polarp.If (($startpos, $endpos), condition, List.rev body, None) }
+  | IF multiline_spaces condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE multiline_spaces ELSE multiline_spaces OPEN_SQUARE multiline_spaces elsebody = items multiline_spaces CLOSE_SQUARE { Polarp.If (($startpos, $endpos), condition, List.rev body, Some (List.rev elsebody)) }
+  | IF multiline_spaces condition = atom multiline_spaces OPEN_SQUARE  multiline_spaces body = items multiline_spaces CLOSE_SQUARE multiline_spaces ELSE multiline_spaces elsebody = multiline_if_condition { Polarp.If (($startpos, $endpos), condition, List.rev body, Some [elsebody]) }
 
 
 multiline_spaces:
@@ -137,10 +137,10 @@ multiline_spaces:
     { () }
 
 fapp:
-  | a = atom_with_fapp b = atom { Polart.Apply (($startpos, $endpos), a, b) }
+  | a = atom_with_fapp b = atom { Polarp.Apply (($startpos, $endpos), a, b) }
 
 multiline_fapp:
-  | a = atom_with_multiline_fapp multiline_spaces b = atom { Polart.Apply (($startpos, $endpos), a, b) }
+  | a = atom_with_multiline_fapp multiline_spaces b = atom { Polarp.Apply (($startpos, $endpos), a, b) }
 
 atom_with_multiline_fapp:
   | a = atom { a }
@@ -170,27 +170,27 @@ atom:
 
   (* object literals *)
   | OPEN_ANGLE multiline_spaces a = object_fields CLOSE_ANGLE
-    { Polart.Object (($startpos, $endpos), a) }
+    { Polarp.Object (($startpos, $endpos), a) }
 
   (* dot syntax *)
-  | receiver = atom name = FIELD { Polart.Field (($startpos, $endpos), receiver, name) }
+  | receiver = atom name = FIELD { Polarp.Field (($startpos, $endpos), receiver, name) }
 
   (* unit *)
   | OPEN_ROUND multiline_spaces CLOSE_ROUND
-    { Polart.Unit ($startpos, $endpos) }
+    { Polarp.Unit ($startpos, $endpos) }
 
   (* lambdas *)
   | OPEN_SQUARE multiline_spaces a = items multiline_spaces CLOSE_SQUARE
-    { Polart.Block (($startpos, $endpos), [], List.rev a) }
+    { Polarp.Block (($startpos, $endpos), [], List.rev a) }
   | COLON multiline_spaces a = list_of_ident multiline_spaces OPEN_SQUARE multiline_spaces b = items multiline_spaces CLOSE_SQUARE
-    { Polart.Block (($startpos, $endpos), a, List.rev b) }
+    { Polarp.Block (($startpos, $endpos), a, List.rev b) }
 
   (* simple tokens *)
   | i = INT
-    { Polart.Int (($startpos, $endpos), i) }
+    { Polarp.Int (($startpos, $endpos), i) }
   | s = STRING
-    { Polart.String (($startpos, $endpos), s) }
+    { Polarp.String (($startpos, $endpos), s) }
   | ident = IDENT
-    { Polart.Variable (($startpos, $endpos), ident) }
+    { Polarp.Variable (($startpos, $endpos), ident) }
   | f = FLOAT
-    { Polart.Float (($startpos, $endpos), f) }
+    { Polarp.Float (($startpos, $endpos), f) }

@@ -1,7 +1,23 @@
 
+(*
+ *
+ *)
+
 type location = Lexing.position * Lexing.position
 
 type identifier = location * string
+
+type polartype = Generic of string
+               | Int
+               | Float
+               | String
+
+let string_of_polartype x = match x with
+  | Generic s -> s
+  | Int -> "Int"
+  | Float -> "Float"
+  | String -> "String"
+
 
 type operator_type =
   | PLUS
@@ -16,19 +32,14 @@ let string_of_operator_type = function
   | DIVIDE -> "/"
 
 type polart
-  = Let of location
-    (* identifier assigned to *)
-    * identifier
-    (* expression *)
-    * polart
-  | If of location
+  = If of location * polartype
     (* condition *)
     * polart
     (* true branch *)
     * polart list
     (* optional false branch *)
     * polart list option
-  | For of location
+  | For of location * polartype
     (* initialization *)
     * polart
     (* condition *)
@@ -37,48 +48,36 @@ type polart
     * polart
     (* action *)
     * polart
-  | Apply of location
+  | Apply of location * polartype
     (* function *)
     * polart
     (* argument *)
     * polart
-  | Definition of location
+  | Definition of location * polartype
     (* name *)
     * string
     (* item *)
     * polart
-  | Block of location
+  | Block of location * polartype
     (* arguments *)
     * string list
     (* list of items in block *)
     * polart list
-  | Int of location * int
-  | Float of location
+  | Int of location * polartype * int
+  | Float of location * polartype
     (* string because it would be terrible
      * to get a precision error in the compiler.
      * *)
     * string
-  | String of location * string
-  | Unit of location
-  | Variable of location * string
-  | Operator of location
-    (* which operator it is *)
-    * operator_type
-    (* first argument *)
-    * polart
-    (* second argument *)
-    * polart
-  | UOperator of location
-    (* which operator it is *)
-    * operator_type
-    (* argument *)
-    * polart
-  | Field of location
+  | String of location * polartype * string
+  | Unit of location * polartype
+  | Variable of location * polartype * string
+  | Field of location * polartype
     (* receiver *)
     * polart
     (* name *)
     * string
-  | Object of location
+  | Object of location * polartype
     (* list of fields to values *)
     * ( string * polart ) list
 
@@ -86,43 +85,45 @@ let string_of_identifier (_, s) = s
 
 let rec string_of_polart polart =
   match polart with
-  | Let (_, identifier, child) ->
-      Printf.sprintf
-        "(let %s = %s)"
-        (string_of_identifier identifier)
-        (string_of_polart child)
-  | If (_, condition, ifbranch, Some elsebranch) ->
+  | If (_, polartype, condition, ifbranch, Some elsebranch) ->
     Printf.sprintf
-      "(if %s [ %s ] else [ %s ])"
+      "( %s | if %s [ %s ] else [ %s ])"
+      (string_of_polartype polartype)
       (string_of_polart condition)
       (String.concat " ; " (List.map string_of_polart ifbranch))
       (String.concat " ; " (List.map string_of_polart elsebranch))
-  | If (_, condition, ifbranch, None) ->
+  | If (_, polartype, condition, ifbranch, None) ->
     Printf.sprintf
-      "(if %s [ %s ])"
+      "( %s | if %s [ %s ])"
+      (string_of_polartype polartype)
       (string_of_polart condition)
       (String.concat " ; " (List.map string_of_polart ifbranch))
-  | For (_, initialization, condition, step, action) ->
+  | For (_, polartype, initialization, condition, step, action) ->
     Printf.sprintf
-      "(for %s ; %s ; %s { %s })"
+      "(%s | for %s ; %s ; %s { %s })"
+      (string_of_polartype polartype)
       (string_of_polart initialization)
       (string_of_polart condition)
       (string_of_polart step)
       (string_of_polart action)
-  | Apply (_, f, argument) ->
+  | Apply (_, polartype, f, argument) ->
     Printf.sprintf
-      "(%s %s)"
+      "( %s | %s %s)"
+      (string_of_polartype polartype)
       (string_of_polart f)
       (string_of_polart argument)
-  | Definition (_, name, e) ->
+  | Definition (_, polartype, name, e) ->
     Printf.sprintf
-      "(define %s %s)"
+      "( %s | define %s %s)"
+      (string_of_polartype polartype)
       name
       (string_of_polart e)
-  | Block (_, arguments, polarts) ->
+  | Block (_, polartype, arguments, polarts) ->
       if (List.length arguments > 0) then
         ": " ^
         String.concat " " arguments ^
+        " | " ^
+        (string_of_polartype polartype) ^
         " [ " ^
         String.concat " ; " (List.map string_of_polart polarts) ^
         " ]"
@@ -130,23 +131,28 @@ let rec string_of_polart polart =
         "[ " ^
         String.concat " ; " (List.map string_of_polart polarts) ^
         " ]"
-  | Int (_, i) ->
-      Printf.sprintf "%d" i
-  | Float (_, f) ->
-      Printf.sprintf "%s" f
-  | String (_, s) ->
-      Printf.sprintf "\"%s\"" s
-  | Unit _ ->
-      "()"
-  | Variable (_, name) ->
-      Printf.sprintf "%s" name
-  | Operator (_, operator_type, a, b) ->
-      "(" ^ string_of_polart a ^ " " ^ (string_of_operator_type operator_type) ^ " " ^ string_of_polart b ^ ")"
-  | UOperator (_, operator_type, e) ->
-      "(" ^ (string_of_operator_type operator_type) ^ " " ^ string_of_polart e ^ ")"
-  | Field (_, receiver, name) ->
-      "(" ^ string_of_polart receiver ^ "." ^ name ^ ")"
-  | Object (_, fields) ->
-      "< " ^
+  | Int (_, polartype, i) ->
+      Printf.sprintf "%s | %d"
+        (string_of_polartype polartype)
+        i
+  | Float (_, polartype, f) ->
+      Printf.sprintf "%s | %s"
+        (string_of_polartype polartype)
+        f
+  | String (_, polartype, s) ->
+      Printf.sprintf "%s | \"%s\""
+        (string_of_polartype polartype)
+        s
+  | Unit (_, polartype) ->
+      Printf.sprintf "%s | ()"
+        (string_of_polartype polartype)
+  | Variable (_, polartype, name) ->
+      Printf.sprintf "%s | %s"
+        (string_of_polartype polartype)
+        name
+  | Field (_, polartype, receiver, name) ->
+      "( " ^ (string_of_polartype polartype) ^ " | " ^ string_of_polart receiver ^ "." ^ name ^ ")"
+  | Object (_, polartype, fields) ->
+      "| " ^ string_of_polartype polartype ^ " < " ^
       String.concat " ; " (List.map (fun (name, e) -> name ^ " = " ^ string_of_polart e) fields) ^
       " >"
