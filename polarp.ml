@@ -8,7 +8,7 @@
  * is an abstract syntax tree. polarp stands for polarbear-parsing-tree. polart
  * is polarbear-typed-tree, which is a tree that has types and is intended to
  * have more specific requirements than just parsing.
- *)
+ * *)
 
 type location = Lexing.position * Lexing.position
 
@@ -26,6 +26,11 @@ let string_of_operator_type = function
   | MINUS -> "-"
   | DIVIDE -> "/"
 
+let string_of_unary_operator_type = function
+  | MINUS -> "-"
+  (* silent erroring is easier to develop with here *)
+  | _ -> "(are you sure this is a unary operator?)"
+
 type polarp
   = If of location
     (* condition *)
@@ -41,8 +46,8 @@ type polarp
     * polarp
     (* step *)
     * polarp
-    (* action *)
-    * polarp
+    (* actions *)
+    * polarp list
   | Apply of location
     (* function *)
     * polarp
@@ -103,13 +108,13 @@ let rec string_of_polarp polarp =
       "(if %s [ %s ])"
       (string_of_polarp condition)
       (String.concat " ; " (List.map string_of_polarp ifbranch))
-  | For (_, initialization, condition, step, action) ->
+  | For (_, initialization, condition, step, actions) ->
     Printf.sprintf
       "(for %s ; %s ; %s { %s })"
       (string_of_polarp initialization)
       (string_of_polarp condition)
       (string_of_polarp step)
-      (string_of_polarp action)
+      (String.concat " ; " (List.map string_of_polarp actions))
   | Apply (_, f, argument) ->
     Printf.sprintf
       "(%s %s)"
@@ -151,3 +156,9 @@ let rec string_of_polarp polarp =
       "< " ^
       String.concat " ; " (List.map (fun (name, e) -> name ^ " = " ^ string_of_polarp e) fields) ^
       " >"
+
+let function_of_operator location operator_type a b : polarp =
+  Apply (location, Field (location, a, string_of_operator_type operator_type), b)
+
+let function_of_uoperator location operator_type a : polarp =
+  Apply (location, Field (location, a, string_of_unary_operator_type operator_type), Unit location)

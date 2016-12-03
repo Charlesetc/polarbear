@@ -8,6 +8,7 @@ test: build
 	@./tools.bash run_all
 
 build:
+	@$(OCAMLBUILD) polarbear_main.native
 	@$(OCAMLBUILD) polarbear_frontend.native
 
 # build-debug:

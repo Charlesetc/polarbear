@@ -1,35 +1,45 @@
 
 (*
+ * This file defines a type Polart
+ * which is intended to be used for
+ * type inference and type checking.
  *
- *)
+ * Polart is very similar to the
+ * parsing tree Polarp, but it also
+ * has types and no operators.
+ * *)
 
-type location = Lexing.position * Lexing.position
-
-type identifier = location * string
+open Polarp
 
 type polartype = Generic of string
                | Int
                | Float
                | String
 
+(* this is a nice way to make short generic names *)
+let generic_type () =
+  let index = ref 0 in
+  let base = Char.code 'a' in
+  let rec string_of_index = function
+    | 0 -> ""
+    | i ->
+      let chr = i mod 26 in
+      base + chr
+        |> Char.chr
+        |> Char.escaped
+        |> (^) (string_of_index (i / 26)) in
+  function () ->
+    index := !index + 1 ; 
+    Generic (string_of_index !index)
+
+let initial_generator = generic_type ()
+let initial_type () = initial_generator ()
+
 let string_of_polartype x = match x with
   | Generic s -> s
   | Int -> "Int"
   | Float -> "Float"
   | String -> "String"
-
-
-type operator_type =
-  | PLUS
-  | MINUS
-  | TIMES
-  | DIVIDE
-
-let string_of_operator_type = function
-  | PLUS -> "+"
-  | TIMES -> "*"
-  | MINUS -> "-"
-  | DIVIDE -> "/"
 
 type polart
   = If of location * polartype
@@ -47,7 +57,7 @@ type polart
     (* step *)
     * polart
     (* action *)
-    * polart
+    * polart list
   | Apply of location * polartype
     (* function *)
     * polart
@@ -98,14 +108,14 @@ let rec string_of_polart polart =
       (string_of_polartype polartype)
       (string_of_polart condition)
       (String.concat " ; " (List.map string_of_polart ifbranch))
-  | For (_, polartype, initialization, condition, step, action) ->
+  | For (_, polartype, initialization, condition, step, actions) ->
     Printf.sprintf
       "(%s | for %s ; %s ; %s { %s })"
       (string_of_polartype polartype)
       (string_of_polart initialization)
       (string_of_polart condition)
       (string_of_polart step)
-      (string_of_polart action)
+      (String.concat " ; " (List.map string_of_polart actions))
   | Apply (_, polartype, f, argument) ->
     Printf.sprintf
       "( %s | %s %s)"
