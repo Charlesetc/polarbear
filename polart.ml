@@ -12,9 +12,26 @@
 open Polarp
 
 type polartype = Generic of string
-               | Int
+               | Integer
                | Float
                | String
+               | Function of
+                   (* function *)
+                   polartype
+                   (* argument *)
+                   * polartype
+
+let rec string_of_polartype x = match x with
+  | Generic s -> s
+  | Integer -> "int"
+  | Float -> "float"
+  | String -> "string"
+  | Function (t1, t2) ->
+      "(" ^
+      string_of_polartype t1 ^
+      " -> " ^
+      string_of_polartype t2 ^
+      ")"
 
 (* this is a nice way to make short generic names *)
 let generic_type () =
@@ -34,12 +51,6 @@ let generic_type () =
 
 let initial_generator = generic_type ()
 let initial_type () = initial_generator ()
-
-let string_of_polartype x = match x with
-  | Generic s -> s
-  | Int -> "Int"
-  | Float -> "Float"
-  | String -> "String"
 
 type polart
   = If of location * polartype
@@ -92,6 +103,75 @@ type polart
     * ( string * polart ) list
 
 let string_of_identifier (_, s) = s
+
+(* mapate over a polart *)
+let rec polarts_map f = List.map (polart_map f)
+and object_polart_map f xs = match xs with
+  | [] -> []
+  | (x , b) :: rest -> (x , polart_map f b) :: object_polart_map f rest
+and polart_map f polart =
+  let polart_map = polart_map f in
+  let polarts_map = polarts_map f in
+  let object_polart_map = object_polart_map f in
+
+  let polart = f polart in
+  match polart with
+  | If (location, polartype, condition, ifbranch, Some elsebranch) ->
+    If (location, polartype, polart_map condition, polarts_map ifbranch, Some (polarts_map elsebranch))
+  | If (location, polartype, condition, ifbranch, None) ->
+    If (location, polartype, polart_map condition, polarts_map ifbranch, None)
+  | For (location, polartype, initialization, condition, step, actions) ->
+    For (location, polartype, polart_map initialization, polart_map condition, polart_map step, polarts_map actions)
+  | Apply (location, polartype, f, argument) ->
+    Apply (location, polartype, polart_map f, polart_map argument)
+  | Definition (location, polartype, name, e) ->
+    Definition (location, polartype, name, polart_map e)
+  | Block (location, polartype, arguments, polarts) ->
+    Block (location, polartype, arguments, polarts_map polarts)
+  | Int (location, polartype, i) ->
+    Int (location, polartype, i)
+  | Float (location, polartype, f) ->
+    Float (location, polartype, f)
+  | String (location, polartype, s) ->
+    String (location, polartype, s)
+  | Unit (location, polartype) ->
+    Unit (location, polartype)
+  | Variable (location, polartype, name) ->
+    Variable (location, polartype, name)
+  | Field (location, polartype, receiver, name) ->
+    Field (location, polartype, polart_map receiver, name)
+  | Object (location, polartype, fields) ->
+    Object (location, polartype, object_polart_map fields)
+
+let type_of = function
+  | If (_, polartype, _, _, _) ->
+    polartype
+  | For (_, polartype, _, _, _, _) ->
+    polartype
+  | Apply (_, polartype, _, _) ->
+    polartype
+  | Definition (_, polartype, _, _) ->
+    polartype
+  | Block (_, polartype, _, _) ->
+    polartype
+  | Int (_, polartype, _) ->
+    polartype
+  | Float (_, polartype, _) ->
+    polartype
+  | String (_, polartype, _) ->
+    polartype
+  | Unit (_, polartype) ->
+    polartype
+  | Variable (_, polartype, _) ->
+    polartype
+  | Field (_, polartype, _, _) ->
+    polartype
+  | Object (_, polartype, _) ->
+    polartype
+
+let polart_iter f =
+  let f p = f p ; p in
+  polart_map f
 
 let rec string_of_polart polart =
   match polart with
