@@ -81,7 +81,7 @@ type polart
     * polart
   | Block of location * polartype
     (* arguments *)
-    * string list
+    * (string * polartype) list
     (* list of items in block *)
     * polart list
   | Int of location * polartype * int
@@ -211,7 +211,7 @@ let rec string_of_polart polart =
   | Block (_, polartype, arguments, polarts) ->
       if (List.length arguments > 0) then
         ": " ^
-        String.concat " " arguments ^
+        String.concat " " (List.map (fun (x, ptype) -> string_of_polartype ptype ^ "|" ^ x) arguments) ^
         " | " ^
         (string_of_polartype polartype) ^
         " [ " ^

@@ -48,7 +48,7 @@ and polart_of_polarp (polarp : Polarp.polarp) : Polart.polart =
     Polart.Block (
       location,
       Polart.initial_type (),
-      arguments,
+      List.map (fun x -> (x, Polart.initial_type ()) )arguments,
       polart_of_polarps polarps )
   | Polarp.Int (location, i) ->
     Polart.Int (
