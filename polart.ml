@@ -105,43 +105,45 @@ type polart
 let string_of_identifier (_, s) = s
 
 (* mapate over a polart *)
-let rec polarts_map f = List.map (polart_map f)
-and object_polart_map f xs = match xs with
+let rec polarts_iter f = List.map (polart_iter f)
+and object_polart_iter f xs = match xs with
   | [] -> []
-  | (x , b) :: rest -> (x , polart_map f b) :: object_polart_map f rest
-and polart_map f polart =
-  let polart_map = polart_map f in
-  let polarts_map = polarts_map f in
-  let object_polart_map = object_polart_map f in
+  | (x , b) :: rest -> (x , polart_iter f b) :: object_polart_iter f rest
+and polart_iter f polart =
+  let polart_iter = polart_iter f in
+  let polarts_iter = polarts_iter f in
+  let object_polart_iter = object_polart_iter f in
 
-  let polart = f polart in
-  match polart with
-  | If (location, polartype, condition, ifbranch, Some elsebranch) ->
-    If (location, polartype, polart_map condition, polarts_map ifbranch, Some (polarts_map elsebranch))
-  | If (location, polartype, condition, ifbranch, None) ->
-    If (location, polartype, polart_map condition, polarts_map ifbranch, None)
-  | For (location, polartype, initialization, condition, step, actions) ->
-    For (location, polartype, polart_map initialization, polart_map condition, polart_map step, polarts_map actions)
-  | Apply (location, polartype, f, argument) ->
-    Apply (location, polartype, polart_map f, polart_map argument)
-  | Definition (location, polartype, name, e) ->
-    Definition (location, polartype, name, polart_map e)
-  | Block (location, polartype, arguments, polarts) ->
-    Block (location, polartype, arguments, polarts_map polarts)
-  | Int (location, polartype, i) ->
-    Int (location, polartype, i)
-  | Float (location, polartype, f) ->
-    Float (location, polartype, f)
-  | String (location, polartype, s) ->
-    String (location, polartype, s)
-  | Unit (location, polartype) ->
-    Unit (location, polartype)
-  | Variable (location, polartype, name) ->
-    Variable (location, polartype, name)
-  | Field (location, polartype, receiver, name) ->
-    Field (location, polartype, polart_map receiver, name)
-  | Object (location, polartype, fields) ->
-    Object (location, polartype, object_polart_map fields)
+  let callback : unit -> unit = f polart in
+  let return_value = match polart with
+    | If (location, polartype, condition, ifbranch, Some elsebranch) ->
+      If (location, polartype, polart_iter condition, polarts_iter ifbranch, Some (polarts_iter elsebranch))
+    | If (location, polartype, condition, ifbranch, None) ->
+      If (location, polartype, polart_iter condition, polarts_iter ifbranch, None)
+    | For (location, polartype, initialization, condition, step, actions) ->
+      For (location, polartype, polart_iter initialization, polart_iter condition, polart_iter step, polarts_iter actions)
+    | Apply (location, polartype, f, argument) ->
+      Apply (location, polartype, polart_iter f, polart_iter argument)
+    | Definition (location, polartype, name, e) ->
+      Definition (location, polartype, name, polart_iter e)
+    | Block (location, polartype, arguments, polarts) ->
+      Block (location, polartype, arguments, polarts_iter polarts)
+    | Int (location, polartype, i) ->
+      Int (location, polartype, i)
+    | Float (location, polartype, f) ->
+      Float (location, polartype, f)
+    | String (location, polartype, s) ->
+      String (location, polartype, s)
+    | Unit (location, polartype) ->
+      Unit (location, polartype)
+    | Variable (location, polartype, name) ->
+      Variable (location, polartype, name)
+    | Field (location, polartype, receiver, name) ->
+      Field (location, polartype, polart_iter receiver, name)
+    | Object (location, polartype, fields) ->
+      Object (location, polartype, object_polart_iter fields)
+  in
+  callback () ; return_value
 
 let type_of = function
   | If (_, polartype, _, _, _) ->
@@ -168,10 +170,6 @@ let type_of = function
     polartype
   | Object (_, polartype, _) ->
     polartype
-
-let polart_iter f =
-  let f p = f p ; p in
-  polart_map f
 
 let rec string_of_polart polart =
   match polart with
@@ -222,22 +220,22 @@ let rec string_of_polart polart =
         String.concat " ; " (List.map string_of_polart polarts) ^
         " ]"
   | Int (_, polartype, i) ->
-      Printf.sprintf "%s | %d"
+      Printf.sprintf "%s|%d"
         (string_of_polartype polartype)
         i
   | Float (_, polartype, f) ->
-      Printf.sprintf "%s | %s"
+      Printf.sprintf "%s|%s"
         (string_of_polartype polartype)
         f
   | String (_, polartype, s) ->
-      Printf.sprintf "%s | \"%s\""
+      Printf.sprintf "%s|\"%s\""
         (string_of_polartype polartype)
         s
   | Unit (_, polartype) ->
-      Printf.sprintf "%s | ()"
+      Printf.sprintf "%s|()"
         (string_of_polartype polartype)
   | Variable (_, polartype, name) ->
-      Printf.sprintf "%s | %s"
+      Printf.sprintf "%s|%s"
         (string_of_polartype polartype)
         name
   | Field (_, polartype, receiver, name) ->
