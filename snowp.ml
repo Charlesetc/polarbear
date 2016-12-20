@@ -1,13 +1,11 @@
 
 (*
- * Polarp is an abstract syntax tree that polarbear is first parsed into.
+ * Snowp is an abstract syntax tree that snow is first parsed into.
  * There are locations for each node and it should be pretty simple.
  * Operators are hardcoded/typed.
  *
  * This is not intended for use outside of the parsing world - it really
- * is an abstract syntax tree. polarp stands for polarbear-parsing-tree. polart
- * is polarbear-typed-tree, which is a tree that has types and is intended to
- * have more specific requirements than just parsing.
+ * is an abstract syntax tree. snowp stands for snow-parsing-tree.
  * *)
 
 type location = Lexing.position * Lexing.position
@@ -31,38 +29,38 @@ let string_of_unary_operator_type = function
   (* silent erroring is easier to develop with here *)
   | _ -> "(are you sure this is a unary operator?)"
 
-type polarp
+type snowp
   = If of location
     (* condition *)
-    * polarp
+    * snowp
     (* true branch *)
-    * polarp list
+    * snowp list
     (* optional false branch *)
-    * polarp list option
+    * snowp list option
   | For of location
     (* initialization *)
-    * polarp
+    * snowp
     (* condition *)
-    * polarp
+    * snowp
     (* step *)
-    * polarp
+    * snowp
     (* actions *)
-    * polarp list
+    * snowp list
   | Apply of location
     (* function *)
-    * polarp
+    * snowp
     (* argument *)
-    * polarp
+    * snowp
   | Definition of location
     (* name *)
     * string
     (* item *)
-    * polarp
+    * snowp
   | Block of location
     (* arguments *)
     * string list
     (* list of items in block *)
-    * polarp list
+    * snowp list
   | Int of location * int
   | Float of location
     (* string because it would be terrible
@@ -76,65 +74,65 @@ type polarp
     (* which operator it is *)
     * operator_type
     (* first argument *)
-    * polarp
+    * snowp
     (* second argument *)
-    * polarp
+    * snowp
   | UOperator of location
     (* which operator it is *)
     * operator_type
     (* argument *)
-    * polarp
+    * snowp
   | Field of location
     (* receiver *)
-    * polarp
+    * snowp
     (* name *)
     * string
   | Object of location
     (* list of fields to values *)
-    * ( string * polarp ) list
+    * ( string * snowp ) list
 
 let string_of_identifier (_, s) = s
 
-let rec string_of_polarp polarp =
-  match polarp with
+let rec string_of_snowp snowp =
+  match snowp with
   | If (_, condition, ifbranch, Some elsebranch) ->
     Printf.sprintf
       "(if %s [ %s ] else [ %s ])"
-      (string_of_polarp condition)
-      (String.concat " ; " (List.map string_of_polarp ifbranch))
-      (String.concat " ; " (List.map string_of_polarp elsebranch))
+      (string_of_snowp condition)
+      (String.concat " ; " (List.map string_of_snowp ifbranch))
+      (String.concat " ; " (List.map string_of_snowp elsebranch))
   | If (_, condition, ifbranch, None) ->
     Printf.sprintf
       "(if %s [ %s ])"
-      (string_of_polarp condition)
-      (String.concat " ; " (List.map string_of_polarp ifbranch))
+      (string_of_snowp condition)
+      (String.concat " ; " (List.map string_of_snowp ifbranch))
   | For (_, initialization, condition, step, actions) ->
     Printf.sprintf
       "(for %s ; %s ; %s { %s })"
-      (string_of_polarp initialization)
-      (string_of_polarp condition)
-      (string_of_polarp step)
-      (String.concat " ; " (List.map string_of_polarp actions))
+      (string_of_snowp initialization)
+      (string_of_snowp condition)
+      (string_of_snowp step)
+      (String.concat " ; " (List.map string_of_snowp actions))
   | Apply (_, f, argument) ->
     Printf.sprintf
       "(%s %s)"
-      (string_of_polarp f)
-      (string_of_polarp argument)
+      (string_of_snowp f)
+      (string_of_snowp argument)
   | Definition (_, name, e) ->
     Printf.sprintf
       "(define %s %s)"
       name
-      (string_of_polarp e)
-  | Block (_, arguments, polarps) ->
+      (string_of_snowp e)
+  | Block (_, arguments, snowps) ->
       if (List.length arguments > 0) then
         ": " ^
         String.concat " " arguments ^
         " [ " ^
-        String.concat " ; " (List.map string_of_polarp polarps) ^
+        String.concat " ; " (List.map string_of_snowp snowps) ^
         " ]"
       else
         "[ " ^
-        String.concat " ; " (List.map string_of_polarp polarps) ^
+        String.concat " ; " (List.map string_of_snowp snowps) ^
         " ]"
   | Int (_, i) ->
       Printf.sprintf "%d" i
@@ -147,18 +145,18 @@ let rec string_of_polarp polarp =
   | Variable (_, name) ->
       Printf.sprintf "%s" name
   | Operator (_, operator_type, a, b) ->
-      "(" ^ string_of_polarp a ^ " " ^ (string_of_operator_type operator_type) ^ " " ^ string_of_polarp b ^ ")"
+      "(" ^ string_of_snowp a ^ " " ^ (string_of_operator_type operator_type) ^ " " ^ string_of_snowp b ^ ")"
   | UOperator (_, operator_type, e) ->
-      "(" ^ (string_of_operator_type operator_type) ^ " " ^ string_of_polarp e ^ ")"
+      "(" ^ (string_of_operator_type operator_type) ^ " " ^ string_of_snowp e ^ ")"
   | Field (_, receiver, name) ->
-      "(" ^ string_of_polarp receiver ^ "." ^ name ^ ")"
+      "(" ^ string_of_snowp receiver ^ "." ^ name ^ ")"
   | Object (_, fields) ->
       "< " ^
-      String.concat " ; " (List.map (fun (name, e) -> name ^ " = " ^ string_of_polarp e) fields) ^
+      String.concat " ; " (List.map (fun (name, e) -> name ^ " = " ^ string_of_snowp e) fields) ^
       " >"
 
-let function_of_operator location operator_type a b : polarp =
+let function_of_operator location operator_type a b : snowp =
   Apply (location, Field (location, a, string_of_operator_type operator_type), b)
 
-let function_of_uoperator location operator_type a : polarp =
+let function_of_uoperator location operator_type a : snowp =
   Apply (location, Field (location, a, string_of_unary_operator_type operator_type), Unit location)

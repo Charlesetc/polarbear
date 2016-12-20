@@ -51,13 +51,13 @@
 
 (* START *)
 
-%start <Polarp.polarp list> polarp
+%start <Snowp.snowp list> snowp
 
 %%
 
 (* NON TERMINALS *)
 
-polarp:
+snowp:
   | end_of_file
     {
       prerr_endline "no input" ;
@@ -84,24 +84,24 @@ expr:
   | a = fapp { a }
 
   (* operators *)
-  | a = expr PLUS multiline_spaces b = expr { Polarp.Operator (($startpos, $endpos), Polarp.PLUS, a, b) }
-  | a = expr TIMES multiline_spaces b = expr { Polarp.Operator (($startpos, $endpos), Polarp.TIMES, a, b) }
-  | a = expr DIVIDE multiline_spaces b = expr { Polarp.Operator (($startpos, $endpos), Polarp.DIVIDE, a, b) }
-  | a = expr MINUS multiline_spaces b = expr { Polarp.Operator (($startpos, $endpos), Polarp.MINUS, a, b) }
-  | MINUS e = expr %prec UMINUS { Polarp.UOperator (($startpos, $endpos), Polarp.MINUS, e) }
+  | a = expr PLUS multiline_spaces b = expr { Snowp.Operator (($startpos, $endpos), Snowp.PLUS, a, b) }
+  | a = expr TIMES multiline_spaces b = expr { Snowp.Operator (($startpos, $endpos), Snowp.TIMES, a, b) }
+  | a = expr DIVIDE multiline_spaces b = expr { Snowp.Operator (($startpos, $endpos), Snowp.DIVIDE, a, b) }
+  | a = expr MINUS multiline_spaces b = expr { Snowp.Operator (($startpos, $endpos), Snowp.MINUS, a, b) }
+  | MINUS e = expr %prec UMINUS { Snowp.UOperator (($startpos, $endpos), Snowp.MINUS, e) }
 
   (* definitions *)
-  | DEFINE i = IDENT e = expr %prec DEFINE { Polarp.Definition (($startpos, $endpos), i, e) }
-  | LET i = IDENT EQUALS multiline_spaces e = expr %prec LET { Polarp.Definition (($startpos, $endpos), i, e) }
+  | DEFINE i = IDENT e = expr %prec DEFINE { Snowp.Definition (($startpos, $endpos), i, e) }
+  | LET i = IDENT EQUALS multiline_spaces e = expr %prec LET { Snowp.Definition (($startpos, $endpos), i, e) }
 
   (* conditionals *)
   | i = if_condition { i }
 
 
 if_condition:
-  | IF condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE { Polarp.If (($startpos, $endpos), condition, body, None) }
-  | IF condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE ELSE multiline_spaces OPEN_SQUARE multiline_spaces elsebody = items multiline_spaces CLOSE_SQUARE { Polarp.If (($startpos, $endpos), condition, body, Some elsebody) }
-  | IF condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE ELSE multiline_spaces elsebody = if_condition { Polarp.If (($startpos, $endpos), condition, body, Some [elsebody]) }
+  | IF condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE { Snowp.If (($startpos, $endpos), condition, body, None) }
+  | IF condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE ELSE multiline_spaces OPEN_SQUARE multiline_spaces elsebody = items multiline_spaces CLOSE_SQUARE { Snowp.If (($startpos, $endpos), condition, body, Some elsebody) }
+  | IF condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE ELSE multiline_spaces elsebody = if_condition { Snowp.If (($startpos, $endpos), condition, body, Some [elsebody]) }
 
 multiline_expr:
   (* most basic expression *)
@@ -111,24 +111,24 @@ multiline_expr:
   | a = multiline_fapp { a }
 
   (* operators *)
-  | a = multiline_expr PLUS b = multiline_expr { Polarp.Operator (($startpos, $endpos), Polarp.PLUS, a, b) }
-  | a = multiline_expr TIMES b = multiline_expr { Polarp.Operator (($startpos, $endpos), Polarp.TIMES, a, b) }
-  | a = multiline_expr DIVIDE b = multiline_expr { Polarp.Operator (($startpos, $endpos), Polarp.DIVIDE, a, b) }
-  | a = multiline_expr MINUS b = multiline_expr { Polarp.Operator (($startpos, $endpos), Polarp.MINUS, a, b) }
-  | MINUS e = expr %prec UMINUS { Polarp.UOperator (($startpos, $endpos), Polarp.MINUS, e) }
+  | a = multiline_expr PLUS b = multiline_expr { Snowp.Operator (($startpos, $endpos), Snowp.PLUS, a, b) }
+  | a = multiline_expr TIMES b = multiline_expr { Snowp.Operator (($startpos, $endpos), Snowp.TIMES, a, b) }
+  | a = multiline_expr DIVIDE b = multiline_expr { Snowp.Operator (($startpos, $endpos), Snowp.DIVIDE, a, b) }
+  | a = multiline_expr MINUS b = multiline_expr { Snowp.Operator (($startpos, $endpos), Snowp.MINUS, a, b) }
+  | MINUS e = expr %prec UMINUS { Snowp.UOperator (($startpos, $endpos), Snowp.MINUS, e) }
 
   (* definitions *)
-  | DEFINE multiline_spaces i = IDENT multiline_spaces e = expr %prec DEFINE { Polarp.Definition (($startpos, $endpos), i, e) }
-  | LET multiline_spaces i = IDENT multiline_spaces EQUALS multiline_spaces e = expr %prec LET { Polarp.Definition (($startpos, $endpos), i, e) }
+  | DEFINE multiline_spaces i = IDENT multiline_spaces e = expr %prec DEFINE { Snowp.Definition (($startpos, $endpos), i, e) }
+  | LET multiline_spaces i = IDENT multiline_spaces EQUALS multiline_spaces e = expr %prec LET { Snowp.Definition (($startpos, $endpos), i, e) }
 
   (* conditionals *)
   | i = multiline_if_condition { i }
 
 
 multiline_if_condition:
-  | IF multiline_spaces condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE { Polarp.If (($startpos, $endpos), condition, List.rev body, None) }
-  | IF multiline_spaces condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE multiline_spaces ELSE multiline_spaces OPEN_SQUARE multiline_spaces elsebody = items multiline_spaces CLOSE_SQUARE { Polarp.If (($startpos, $endpos), condition, List.rev body, Some (List.rev elsebody)) }
-  | IF multiline_spaces condition = atom multiline_spaces OPEN_SQUARE  multiline_spaces body = items multiline_spaces CLOSE_SQUARE multiline_spaces ELSE multiline_spaces elsebody = multiline_if_condition { Polarp.If (($startpos, $endpos), condition, List.rev body, Some [elsebody]) }
+  | IF multiline_spaces condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE { Snowp.If (($startpos, $endpos), condition, List.rev body, None) }
+  | IF multiline_spaces condition = atom multiline_spaces OPEN_SQUARE multiline_spaces body = items multiline_spaces CLOSE_SQUARE multiline_spaces ELSE multiline_spaces OPEN_SQUARE multiline_spaces elsebody = items multiline_spaces CLOSE_SQUARE { Snowp.If (($startpos, $endpos), condition, List.rev body, Some (List.rev elsebody)) }
+  | IF multiline_spaces condition = atom multiline_spaces OPEN_SQUARE  multiline_spaces body = items multiline_spaces CLOSE_SQUARE multiline_spaces ELSE multiline_spaces elsebody = multiline_if_condition { Snowp.If (($startpos, $endpos), condition, List.rev body, Some [elsebody]) }
 
 
 multiline_spaces:
@@ -137,10 +137,10 @@ multiline_spaces:
     { () }
 
 fapp:
-  | a = atom_with_fapp b = atom { Polarp.Apply (($startpos, $endpos), a, b) }
+  | a = atom_with_fapp b = atom { Snowp.Apply (($startpos, $endpos), a, b) }
 
 multiline_fapp:
-  | a = atom_with_multiline_fapp multiline_spaces b = atom { Polarp.Apply (($startpos, $endpos), a, b) }
+  | a = atom_with_multiline_fapp multiline_spaces b = atom { Snowp.Apply (($startpos, $endpos), a, b) }
 
 atom_with_multiline_fapp:
   | a = atom { a }
@@ -170,27 +170,27 @@ atom:
 
   (* object literals *)
   | OPEN_ANGLE multiline_spaces a = object_fields CLOSE_ANGLE
-    { Polarp.Object (($startpos, $endpos), a) }
+    { Snowp.Object (($startpos, $endpos), a) }
 
   (* dot syntax *)
-  | receiver = atom name = FIELD { Polarp.Field (($startpos, $endpos), receiver, name) }
+  | receiver = atom name = FIELD { Snowp.Field (($startpos, $endpos), receiver, name) }
 
   (* unit *)
   | OPEN_ROUND multiline_spaces CLOSE_ROUND
-    { Polarp.Unit ($startpos, $endpos) }
+    { Snowp.Unit ($startpos, $endpos) }
 
   (* lambdas *)
   | OPEN_SQUARE multiline_spaces a = items multiline_spaces CLOSE_SQUARE
-    { Polarp.Block (($startpos, $endpos), [], List.rev a) }
+    { Snowp.Block (($startpos, $endpos), [], List.rev a) }
   | COLON multiline_spaces a = list_of_ident multiline_spaces OPEN_SQUARE multiline_spaces b = items multiline_spaces CLOSE_SQUARE
-    { Polarp.Block (($startpos, $endpos), a, List.rev b) }
+    { Snowp.Block (($startpos, $endpos), a, List.rev b) }
 
   (* simple tokens *)
   | i = INT
-    { Polarp.Int (($startpos, $endpos), i) }
+    { Snowp.Int (($startpos, $endpos), i) }
   | s = STRING
-    { Polarp.String (($startpos, $endpos), s) }
+    { Snowp.String (($startpos, $endpos), s) }
   | ident = IDENT
-    { Polarp.Variable (($startpos, $endpos), ident) }
+    { Snowp.Variable (($startpos, $endpos), ident) }
   | f = FLOAT
-    { Polarp.Float (($startpos, $endpos), f) }
+    { Snowp.Float (($startpos, $endpos), f) }

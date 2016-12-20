@@ -8,7 +8,7 @@ function new_test () {
 
 function generate_test () {
   file=$(basename $1 .plr).plr
-  ./polarbear_frontend.native < ./test/parse/input/$file | tee ./test/parse/output/$file
+  ./snow_frontend.native < ./test/parse/input/$file | tee ./test/parse/output/$file
 }
 
 function list_tests () {
@@ -24,12 +24,12 @@ function run_test () {
   file=$(basename $1 .plr).plr
   temp=$(mktemp '/tmp/XXXX.plrt')
 
-  if ./polarbear_frontend.native < ./test/parse/input/$file > $temp && cmp ./test/parse/output/$file $temp
+  if ./snow_frontend.native < ./test/parse/input/$file > $temp && cmp ./test/parse/output/$file $temp
   then
     temp2=$(mktemp '/tmp/XXXX.plrt')
 
     # also assert that the generated output can be parsed
-    if ./polarbear_frontend.native < ./test/parse/output/$file > $temp2 && cmp $temp $temp
+    if ./snow_frontend.native < ./test/parse/output/$file > $temp2 && cmp $temp $temp
     then
       echo -e "$file \033[1;32my\033[0m"
     else

@@ -8,8 +8,9 @@ test: build
 	@./tools.bash run_all
 
 build:
-	@$(OCAMLBUILD) polarbear_main.native
-	@$(OCAMLBUILD) polarbear_frontend.native
+	@rm -f *.native
+	@$(OCAMLBUILD) snow_main.native
+	@$(OCAMLBUILD) snow_frontend.native
 
 # build-debug:
 # 	@$(OCAMLBUILD) $(MAIN).d.byte

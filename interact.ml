@@ -1,11 +1,11 @@
 
 (* interact *)
 
-let compile_polarbear (source : string) : Polarp.polarp list =
+let parse_snow (source : string) : Snowp.snowp list =
   let lexed_source = Lexing.from_string source in
   try
-    let polarps = Parser.polarp Lexer.token lexed_source in
-    List.rev polarps
+    let snowps = Parser.snowp Lexer.token lexed_source in
+    List.rev snowps
   with Parser.Error ->
     Printf.eprintf "%d to %d: syntax error.\n%!" (Lexing.lexeme_start lexed_source) (Lexing.lexeme_end lexed_source) ;
     exit 1
