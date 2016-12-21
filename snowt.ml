@@ -10,7 +10,9 @@
  * has types and no operators.
  * *)
 
-open Snowp
+(* open Snowp *)
+
+type location = Lexing.position * Lexing.position * string (* filename *)
 
 type snowt
   = If of location
@@ -114,7 +116,7 @@ let rec string_of_snowt snowt =
   | String (_, s) ->
       Printf.sprintf "\"%s\""
         s
-  | Unit (_, snowtype) ->
+  | Unit (_) ->
       Printf.sprintf "()"
   | Variable (_, name) ->
       Printf.sprintf "%s"

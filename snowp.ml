@@ -155,8 +155,3 @@ let rec string_of_snowp snowp =
       String.concat " ; " (List.map (fun (name, e) -> name ^ " = " ^ string_of_snowp e) fields) ^
       " >"
 
-let function_of_operator location operator_type a b : snowp =
-  Apply (location, Field (location, a, string_of_operator_type operator_type), b)
-
-let function_of_uoperator location operator_type a : snowp =
-  Apply (location, Field (location, a, string_of_unary_operator_type operator_type), Unit location)
